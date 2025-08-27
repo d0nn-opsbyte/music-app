@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime, F
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker, validates
 from datetime import datetime
 
-# Database setup
+
 engine = create_engine('sqlite:///music_app.db')
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
