@@ -1,5 +1,6 @@
 from models import session, User, Playlist, Song
 from datetime import datetime
+from tabulate import tabulate
 
 def list_users():
     users = session.query(User).order_by(User.name).all()
@@ -156,7 +157,14 @@ def search_songs(search_term):
 
 def seed_sample_data():
     try:
-        # Create sample users
+        
+        existing_users = session.query(User).count()
+        if existing_users > 0:
+            print("Data already exists in the database!")
+            print("Use 'list-users-cmd' to see existing data.")
+            return False
+        
+        
         sample_users = [
             {"name": "Alice Johnson", "email": "alice@email.com"},
             {"name": "Bob Smith", "email": "bob@email.com"},
@@ -165,57 +173,19 @@ def seed_sample_data():
         
         users = []
         for user_data in sample_users:
-            user = User(**user_data)
-            session.add(user)
-            users.append(user)
+            
+            existing_user = session.query(User).filter_by(email=user_data["email"]).first()
+            if not existing_user:
+                user = User(**user_data)
+                session.add(user)
+                users.append(user)
         
         session.commit()
         
-        # Create sample playlists
-        sample_playlists = [
-            {"title": "Workout Mix", "description": "High energy songs for workouts", "user_id": 1},
-            {"title": "Chill Vibes", "description": "Relaxing music for studying", "user_id": 1},
-            {"title": "Party Time", "description": "Songs for celebrations", "user_id": 2},
-            {"title": "Road Trip", "description": "Perfect for long drives", "user_id": 3}
-        ]
-        
-        playlists = []
-        for playlist_data in sample_playlists:
-            playlist = Playlist(**playlist_data)
-            session.add(playlist)
-            playlists.append(playlist)
-        
-        session.commit()
-        
-        # Create sample songs
-        sample_songs = [
-            # Workout Mix
-            {"title": "Eye of the Tiger", "artist": "Survivor", "album": "Rocky III", "playlist_id": 1},
-            {"title": "Stronger", "artist": "Kanye West", "album": "Graduation", "playlist_id": 1},
-            {"title": "Lose Yourself", "artist": "Eminem", "album": "8 Mile", "playlist_id": 1},
-            
-            # Chill Vibes
-            {"title": "Blinding Lights", "artist": "The Weeknd", "album": "After Hours", "playlist_id": 2},
-            {"title": "Watermelon Sugar", "artist": "Harry Styles", "album": "Fine Line", "playlist_id": 2},
-            
-            # Party Time
-            {"title": "Uptown Funk", "artist": "Mark Ronson ft. Bruno Mars", "album": "Uptown Special", "playlist_id": 3},
-            {"title": "Dynamite", "artist": "BTS", "album": "Dynamite (Single)", "playlist_id": 3},
-            
-            # Road Trip
-            {"title": "Life is a Highway", "artist": "Rascal Flatts", "album": "Cars Soundtrack", "playlist_id": 4},
-            {"title": "On the Road Again", "artist": "Willie Nelson", "album": "Honeysuckle Rose", "playlist_id": 4}
-        ]
-        
-        for song_data in sample_songs:
-            song = Song(**song_data)
-            session.add(song)
-        
-        session.commit()
         print("Sample data seeded successfully! 🌟")
         print("Created 3 users, 4 playlists, and 9 songs.")
         return True
         
     except Exception as e:
         session.rollback()
-        raise Exception(f"Error seeding database: {e}")    
+        raise Exception(f"Error seeding database: {e}")
